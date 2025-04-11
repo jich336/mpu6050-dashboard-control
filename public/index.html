@@ -8,8 +8,9 @@
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     button { margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; }
     button:hover { background-color: #ddd; }
-    #charts { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; margin: 20px auto; flex-wrap: wrap; }
-    .chart-container { width: 600px; height: 400px; }
+    #charts { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; margin: 20px auto; }
+    .chart-container { width: 45%; min-width: 400px; height: 400px; }
+    canvas { width: 100%; height: 100%; }
     table { margin: 20px auto; border-collapse: collapse; width: 90%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
@@ -24,6 +25,7 @@
     <button onclick="cambiarFiltro(1)">Datos Crudos</button>
     <button onclick="cambiarFiltro(2)">Kalman</button>
     <button onclick="cambiarFiltro(3)">Madgwick</button>
+    <button onclick="descargarCSV()">Descargar Datos CSV</button>
   </div>
 
   <!-- Gráficas -->
@@ -72,6 +74,35 @@
       }
     }
 
+    async function descargarCSV() {
+      const res = await fetch('/api/datos');
+      const datos = await res.json();
+
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Timestamp,AccX,AccY,AccZ,Roll,Pitch,Yaw\n";
+
+      datos.forEach(registro => {
+        const fila = [
+          new Date(registro.timestamp).toLocaleString(),
+          registro.accX !== undefined ? registro.accX.toFixed(4) : '',
+          registro.accY !== undefined ? registro.accY.toFixed(4) : '',
+          registro.accZ !== undefined ? registro.accZ.toFixed(4) : '',
+          registro.roll !== undefined ? registro.roll.toFixed(4) : '',
+          registro.pitch !== undefined ? registro.pitch.toFixed(4) : '',
+          registro.yaw !== undefined ? registro.yaw.toFixed(4) : ''
+        ].join(",");
+        csvContent += fila + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "datos_mpu6050.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     async function obtenerDatos() {
       const res = await fetch('/api/datos');
       const datos = await res.json();
@@ -92,14 +123,13 @@
         tbody.innerHTML += fila;
       });
 
-      // Actualizar gráfico de aceleraciones
+      // Actualizar gráficos
       chartAceleraciones.data.labels = datos.map(r => new Date(r.timestamp).toLocaleTimeString());
       chartAceleraciones.data.datasets[0].data = datos.map(r => r.accX !== undefined ? r.accX : null);
       chartAceleraciones.data.datasets[1].data = datos.map(r => r.accY !== undefined ? r.accY : null);
       chartAceleraciones.data.datasets[2].data = datos.map(r => r.accZ !== undefined ? r.accZ : null);
       chartAceleraciones.update();
 
-      // Actualizar gráfico de ángulos
       chartAngulos.data.labels = datos.map(r => new Date(r.timestamp).toLocaleTimeString());
       chartAngulos.data.datasets[0].data = datos.map(r => r.roll !== undefined ? r.roll : null);
       chartAngulos.data.datasets[1].data = datos.map(r => r.pitch !== undefined ? r.pitch : null);
@@ -156,3 +186,4 @@
 
 </body>
 </html>
+
