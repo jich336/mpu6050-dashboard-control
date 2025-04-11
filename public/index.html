@@ -8,7 +8,8 @@
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     button { margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; }
     button:hover { background-color: #ddd; }
-    #chart { max-width: 800px; margin: 20px auto; }
+    #charts { display: flex; flex-direction: column; align-items: center; gap: 40px; margin: 20px auto; }
+    canvas { max-width: 800px; }
     table { margin: 20px auto; border-collapse: collapse; width: 90%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
@@ -25,8 +26,18 @@
     <button onclick="cambiarFiltro(3)">Madgwick</button>
   </div>
 
-  <!-- Gráfica -->
-  <canvas id="chart" width="400" height="200"></canvas>
+  <!-- Gráficas -->
+  <div id="charts">
+    <div>
+      <h2>Aceleraciones (m/s²)</h2>
+      <canvas id="chartAceleraciones"></canvas>
+    </div>
+
+    <div>
+      <h2>Ángulos de Inclinación (°)</h2>
+      <canvas id="chartAngulos"></canvas>
+    </div>
+  </div>
 
   <!-- Tabla de datos -->
   <h2>Datos Recientes</h2>
@@ -68,7 +79,7 @@
       // Actualizar tabla
       const tbody = document.getElementById('tabla').querySelector('tbody');
       tbody.innerHTML = "";
-      datos.slice(-10).reverse().forEach(registro => {
+      datos.slice(-50).reverse().forEach(registro => {
         const fila = `<tr>
           <td>${new Date(registro.timestamp).toLocaleString()}</td>
           <td>${registro.accX !== undefined ? registro.accX.toFixed(2) : '-'}</td>
@@ -81,35 +92,59 @@
         tbody.innerHTML += fila;
       });
 
-      // Actualizar gráfico
-      chart.data.labels = datos.map(r => new Date(r.timestamp).toLocaleTimeString());
-      chart.data.datasets[0].data = datos.map(r => r.accX !== undefined ? r.accX : null);
-      chart.data.datasets[1].data = datos.map(r => r.accY !== undefined ? r.accY : null);
-      chart.data.datasets[2].data = datos.map(r => r.accZ !== undefined ? r.accZ : null);
-      chart.data.datasets[3].data = datos.map(r => r.roll !== undefined ? r.roll : null);
-      chart.data.datasets[4].data = datos.map(r => r.pitch !== undefined ? r.pitch : null);
-      chart.data.datasets[5].data = datos.map(r => r.yaw !== undefined ? r.yaw : null);
-      chart.update();
+      // Actualizar gráfico de aceleraciones
+      chartAceleraciones.data.labels = datos.map(r => new Date(r.timestamp).toLocaleTimeString());
+      chartAceleraciones.data.datasets[0].data = datos.map(r => r.accX !== undefined ? r.accX : null);
+      chartAceleraciones.data.datasets[1].data = datos.map(r => r.accY !== undefined ? r.accY : null);
+      chartAceleraciones.data.datasets[2].data = datos.map(r => r.accZ !== undefined ? r.accZ : null);
+      chartAceleraciones.update();
+
+      // Actualizar gráfico de ángulos
+      chartAngulos.data.labels = datos.map(r => new Date(r.timestamp).toLocaleTimeString());
+      chartAngulos.data.datasets[0].data = datos.map(r => r.roll !== undefined ? r.roll : null);
+      chartAngulos.data.datasets[1].data = datos.map(r => r.pitch !== undefined ? r.pitch : null);
+      chartAngulos.data.datasets[2].data = datos.map(r => r.yaw !== undefined ? r.yaw : null);
+      chartAngulos.update();
     }
 
-    const ctx = document.getElementById('chart').getContext('2d');
-    const chart = new Chart(ctx, {
+    const ctxAceleraciones = document.getElementById('chartAceleraciones').getContext('2d');
+    const chartAceleraciones = new Chart(ctxAceleraciones, {
       type: 'line',
       data: {
         labels: [],
         datasets: [
           { label: 'AccX', data: [], borderColor: 'red', fill: false },
           { label: 'AccY', data: [], borderColor: 'blue', fill: false },
-          { label: 'AccZ', data: [], borderColor: 'green', fill: false },
+          { label: 'AccZ', data: [], borderColor: 'green', fill: false }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { zoom: { zoom: { wheel: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } },
+        scales: {
+          x: { display: true },
+          y: { title: { display: true, text: 'm/s²' } }
+        }
+      }
+    });
+
+    const ctxAngulos = document.getElementById('chartAngulos').getContext('2d');
+    const chartAngulos = new Chart(ctxAngulos, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
           { label: 'Roll', data: [], borderColor: 'orange', fill: false },
           { label: 'Pitch', data: [], borderColor: 'purple', fill: false },
           { label: 'Yaw', data: [], borderColor: 'brown', fill: false }
         ]
       },
       options: {
+        responsive: true,
+        plugins: { zoom: { zoom: { wheel: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } },
         scales: {
           x: { display: true },
-          y: { display: true }
+          y: { title: { display: true, text: 'Grados (°)' } }
         }
       }
     });
@@ -119,3 +154,4 @@
 
 </body>
 </html>
+
