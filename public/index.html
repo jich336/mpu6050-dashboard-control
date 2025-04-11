@@ -8,8 +8,8 @@
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     button { margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; }
     button:hover { background-color: #ddd; }
-    #charts { display: flex; flex-direction: column; align-items: center; gap: 40px; margin: 20px auto; }
-    canvas { width: 1000px; height: 400px; }
+    #charts { display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 40px; margin: 20px auto; flex-wrap: wrap; }
+    .chart-container { width: 600px; height: 400px; }
     table { margin: 20px auto; border-collapse: collapse; width: 90%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
@@ -28,12 +28,12 @@
 
   <!-- Gráficas -->
   <div id="charts">
-    <div>
+    <div class="chart-container">
       <h2>Aceleraciones (m/s²)</h2>
       <canvas id="chartAceleraciones"></canvas>
     </div>
 
-    <div>
+    <div class="chart-container">
       <h2>Ángulos de Inclinación (°)</h2>
       <canvas id="chartAngulos"></canvas>
     </div>
@@ -156,5 +156,3 @@
 
 </body>
 </html>
-
-
