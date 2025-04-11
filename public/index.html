@@ -9,7 +9,7 @@
     button { margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; }
     button:hover { background-color: #ddd; }
     #charts { display: flex; flex-direction: column; align-items: center; gap: 40px; margin: 20px auto; }
-    canvas { max-width: 800px; }
+    canvas { width: 1000px; height: 400px; }
     table { margin: 20px auto; border-collapse: collapse; width: 90%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f4f4f4; }
@@ -120,6 +120,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { zoom: { zoom: { wheel: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } },
         scales: {
           x: { display: true },
@@ -141,6 +142,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: { zoom: { zoom: { wheel: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } } },
         scales: {
           x: { display: true },
@@ -154,4 +156,5 @@
 
 </body>
 </html>
+
 
