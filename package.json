@@ -1,0 +1,24 @@
+{
+  "name": "expressdashboardproject",
+  "version": "1.0.0",
+  "main": "Servertesis.js",
+  "scripts": {
+    "start": "node Servertesis.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jich336/express-dashboard-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jich336/express-dashboard-project/issues"
+  },
+  "homepage": "https://github.com/jich336/express-dashboard-project#readme",
+  "description": ""
+}

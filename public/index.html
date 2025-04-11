@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard y Control de Filtro - MPU6050</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    button { margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; border: none; cursor: pointer; }
+    button:hover { background-color: #ddd; }
+    #chart { max-width: 800px; margin: 20px auto; }
+    table { margin: 20px auto; border-collapse: collapse; width: 90%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+
+  <h1>Dashboard y Control de Filtro - MPU6050</h1>
+
+  <!-- Botones para cambiar el filtro -->
+  <div>
+    <button onclick="cambiarFiltro(1)">Datos Crudos</button>
+    <button onclick="cambiarFiltro(2)">Kalman</button>
+    <button onclick="cambiarFiltro(3)">Madgwick</button>
+  </div>
+
+  <!-- Gráfica -->
+  <canvas id="chart" width="400" height="200"></canvas>
+
+  <!-- Tabla de datos -->
+  <h2>Datos Recientes</h2>
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>AccX</th>
+        <th>AccY</th>
+        <th>AccZ</th>
+        <th>Roll</th>
+        <th>Pitch</th>
+        <th>Yaw</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    async function cambiarFiltro(modo) {
+      const response = await fetch('/api/filtro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modo: modo })
+      });
+
+      if (response.ok) {
+        alert('Filtro cambiado a modo ' + modo);
+      } else {
+        alert('Error al cambiar filtro');
+      }
+    }
+
+    async function obtenerDatos() {
+      const res = await fetch('/api/datos');
+      const datos = await res.json();
+
+      // Actualizar tabla
+      const tbody = document.getElementById('tabla').querySelector('tbody');
+      tbody.innerHTML = "";
+      datos.slice(-10).reverse().forEach(registro => {
+        const fila = `<tr>
+          <td>${new Date(registro.timestamp).toLocaleString()}</td>
+          <td>${registro.accX !== undefined ? registro.accX.toFixed(2) : '-'}</td>
+          <td>${registro.accY !== undefined ? registro.accY.toFixed(2) : '-'}</td>
+          <td>${registro.accZ !== undefined ? registro.accZ.toFixed(2) : '-'}</td>
+          <td>${registro.roll !== undefined ? registro.roll.toFixed(2) : '-'}</td>
+          <td>${registro.pitch !== undefined ? registro.pitch.toFixed(2) : '-'}</td>
+          <td>${registro.yaw !== undefined ? registro.yaw.toFixed(2) : '-'}</td>
+        </tr>`;
+        tbody.innerHTML += fila;
+      });
+
+      // Actualizar gráfico
+      chart.data.labels = datos.map(r => new Date(r.timestamp).toLocaleTimeString());
+      chart.data.datasets[0].data = datos.map(r => r.accX !== undefined ? r.accX : null);
+      chart.data.datasets[1].data = datos.map(r => r.accY !== undefined ? r.accY : null);
+      chart.data.datasets[2].data = datos.map(r => r.accZ !== undefined ? r.accZ : null);
+      chart.data.datasets[3].data = datos.map(r => r.roll !== undefined ? r.roll : null);
+      chart.data.datasets[4].data = datos.map(r => r.pitch !== undefined ? r.pitch : null);
+      chart.data.datasets[5].data = datos.map(r => r.yaw !== undefined ? r.yaw : null);
+      chart.update();
+    }
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [
+          { label: 'AccX', data: [], borderColor: 'red', fill: false },
+          { label: 'AccY', data: [], borderColor: 'blue', fill: false },
+          { label: 'AccZ', data: [], borderColor: 'green', fill: false },
+          { label: 'Roll', data: [], borderColor: 'orange', fill: false },
+          { label: 'Pitch', data: [], borderColor: 'purple', fill: false },
+          { label: 'Yaw', data: [], borderColor: 'brown', fill: false }
+        ]
+      },
+      options: {
+        scales: {
+          x: { display: true },
+          y: { display: true }
+        }
+      }
+    });
+
+    setInterval(obtenerDatos, 2000);
+  </script>
+
+</body>
+</html>
